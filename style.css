@@ -1,0 +1,78 @@
+body {
+  font-family: sans-serif;
+  margin: 20px;
+  background-color: #f4f4f4;
+}
+
+#code {
+  width: 100%;
+  height: 300px;
+}
+
+.CodeMirror {
+  font-size: 16px;
+  line-height: 1.5;
+  font-family: 'Fira Code', monospace;
+  border: 1px solid #ccc;
+  height: 300px;
+}
+#output {
+  background-color: #000;
+  color: #0f0;
+  padding: 15px;
+  white-space: pre-wrap;
+}
+#custom-input {
+  width: 100%;
+  height: 100px;
+  margin-top: 10px;
+  padding: 10px;
+  font-family: monospace;
+  border: 1px solid #ccc;
+  resize: vertical;
+}
+ /* Light mode (default) */
+body {
+  font-family: sans-serif;
+  background-color: #f4f4f4;
+  color: #000;
+  margin: 20px;
+}
+
+#custom-input, #output {
+  background: #fff;
+  color: #000;
+}
+
+/* Dark mode styles */
+body.dark-mode {
+  background-color: #1e1e1e;
+  color: #f4f4f4;
+}
+
+body.dark-mode #custom-input,
+body.dark-mode #output {
+  background-color: #2d2d2d;
+  color: #ffffff;
+}
+
+#toggle-theme {
+  margin-bottom: 20px;
+  padding: 10px 18px;
+  background: linear-gradient(to right, #4b6cb7, #182848);
+  color: white;
+  border: none;
+  border-radius: 25px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+}
+#toggle-theme:hover {
+  transform: scale(1.05);
+  background: linear-gradient(to right, #182848, #4b6cb7);
+}
+body.dark-mode #toggle-theme {
+  background: linear-gradient(to right, #fff, #ccc);
+  color: #000;
+}

@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Online Code Editor</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.5/codemirror.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.5/theme/dracula.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.5/theme/dracula.min.css">
+
+</head>
+<body>
+
+  <h1>Real-Time Online Code Editor</h1>
+  <button id="toggle-theme">🌙 Toggle Dark Mode</button>
+
+  <label for="language">Choose Language:</label>
+  <select id="language">
+    <option value="54">C++</option>
+    <option value="62">Java</option>
+    <option value="71">Python</option>
+  </select>
+
+  <textarea id="code" name="code">// Write your code here</textarea>
+  <h3>Custom Input (stdin):</h3>
+  <textarea id="custom-input" placeholder="Enter your input here..."></textarea>
+
+  <button id="run">Run Code</button>
+
+  <h2>Output:</h2>
+  <pre id="output">Your output will appear here...</pre>
+
+  <!-- CodeMirror -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.5/codemirror.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.5/mode/clike/clike.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.5/mode/python/python.min.js"></script>
+
+  <script src="script.js"></script>
+</body>
+</html>
+ 
