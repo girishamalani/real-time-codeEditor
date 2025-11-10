@@ -1,8 +1,5 @@
 // =======================================================
 // PURE LOGIC FUNCTIONS (EASY TO TEST)
-// These functions are "pure": they don't read from the DOM
-// or change global state. They just take input and
-// return output. This is what Jest is for.
 // =======================================================
 
 /**
@@ -11,8 +8,16 @@
  * @returns {string} The text to display to the user.
  */
 function parseExecutionResult(result) {
-  if (!result) return "No output";
-  return result.stdout || result.stderr || result.compile_output || "No output";
+  if (!result) return "No output (empty response)";
+
+  // Fix: Check for stdout first, even if it's an empty string.
+  if (result.stdout !== null && result.stdout !== undefined) {
+    return result.stdout;
+  }
+  if (result.stderr) return result.stderr; // Show runtime errors
+  if (result.compile_output) return result.compile_output; // Show compile errors
+
+  return "No output (empty response)";
 }
 
 /**
@@ -44,8 +49,6 @@ function getStorageTheme(isDark) {
 
 // =======================================================
 // APPLICATION CODE (DOM & SIDE EFFECTS)
-// This is the main code that runs your app.
-// It reads from the DOM and calls the "pure" functions.
 // =======================================================
 
 // --- Element Selectors ---
@@ -59,115 +62,113 @@ const elements = {
 };
 
 // --- CodeMirror Setup ---
-const editor = CodeMirror.fromTextArea(elements.codeTextArea, {
-  mode: "text/x-c++src",
-  lineNumbers: true,
-  theme: "default"
-});
+// We check if the element exists before trying to use it
+if (elements.codeTextArea) {
+  const editor = CodeMirror.fromTextArea(elements.codeTextArea, {
+    mode: "text/x-c++src",
+    lineNumbers: true,
+    theme: "default"
+  });
 
-const languageMap = {
-  54: "text/x-c++src",
-  62: "text/x-java",
-  71: "text/x-python"
-};
+  const languageMap = {
+    54: "text/x-c++src",
+    62: "text/x-java",
+    71: "text/x-python"
+  };
 
-// --- Event Handlers ---
+  // --- Event Handlers ---
 
-/**
- * Handles the click of the "Run Code" button.
- * Fetches data from the API and updates the output.
- */
-async function handleRunClick() {
-  const sourceCode = editor.getValue();
-  const langId = elements.languageSelect.value;
-  const inputText = elements.customInput.value;
+  /**
+   * Handles the click of the "Run Code" button.
+   */
+  async function handleRunClick() {
+    const sourceCode = editor.getValue();
+    const langId = elements.languageSelect.value;
+    const inputText = elements.customInput.value;
 
-  elements.outputArea.textContent = "Running code..."; // Give user feedback
+    elements.outputArea.textContent = "Running code...";
 
-  try {
-    const response = await fetch("https://judge0-ce.p.rapidapi.com/submissions?base64_encoded=false&wait=true", {
-      method: "POST",
-      headers: {
-        "content-type": "application/json",
-        "X-RapidAPI-Key": "c4c59b3062msh0b5fbe8cb7498cfp1bc306jsn783a7a0d024b", // Note: Exposing API keys like this is insecure for a public website
-        "X-RapidAPI-Host": "judge0-ce.p.rapidapi.com"
-      },
-      body: JSON.stringify({
-        source_code: sourceCode,
-        language_id: parseInt(langId),
-        stdin: inputText
-      })
-    });
+    try {
+      const response = await fetch("https://judge0-ce.p.rapidapi.com/submissions?base64_encoded=false&wait=true", {
+        method: "POST",
+        headers: {
+          "content-type": "application/json",
+          "X-RapidAPI-Key": "c4c59b3062msh0b5fbe8cb7498cfp1bc306jsn783a7a0d024b",
+                               "X-RapidAPI-Host": "judge0-ce.p.rapidapi.com"
+        },
+        body: JSON.stringify({
+          source_code: sourceCode,
+          language_id: parseInt(langId),
+          stdin: inputText
+        })
+      });
 
-    const result = await response.json();
-    // Use our PURE function to get the text
-    elements.outputArea.textContent = parseExecutionResult(result);
+      const result = await response.json();
+      elements.outputArea.textContent = parseExecutionResult(result);
 
-  } catch (error) {
-    // Use our PURE function to format the error
-    elements.outputArea.textContent = formatErrorMessage(error);
+    } catch (error) {
+      elements.outputArea.textContent = formatErrorMessage(error);
+    }
   }
-}
 
-/**
- * Handles the "change" event of the language dropdown.
- */
-function handleLanguageChange() {
-  const langId = elements.languageSelect.value;
-  editor.setOption("mode", languageMap[langId]);
-}
+  /**
+   * Handles the "change" event of the language dropdown.
+   */
+  function handleLanguageChange() {
+    const langId = elements.languageSelect.value;
+    if (languageMap[langId]) {
+      editor.setOption("mode", languageMap[langId]);
+    }
+  }
 
-/**
- * Handles the "click" event of the theme toggle button.
- */
-function handleThemeToggle() {
-  const isDark = document.body.classList.toggle("dark-mode");
-  
-  // Use our PURE functions to get theme names
-  const editorTheme = getEditorTheme(isDark);
-  const storageTheme = getStorageTheme(isDark);
-
-  // Apply side effects
-  editor.setOption("theme", editorTheme);
-  localStorage.setItem("theme", storageTheme);
-}
-
-/**
- * Loads the saved theme from localStorage on page load.
- */
-function loadInitialTheme() {
-  const savedTheme = localStorage.getItem("theme");
-  const isDark = (savedTheme === "dark");
-
-  if (isDark) {
-    document.body.classList.add("dark-mode");
+  /**
+   * Handles the "click" event of the theme toggle button.
+   */
+  function handleThemeToggle() {
+    const isDark = document.body.classList.toggle("dark-mode");
     const editorTheme = getEditorTheme(isDark);
+    const storageTheme = getStorageTheme(isDark);
+
     editor.setOption("theme", editorTheme);
+    localStorage.setItem("theme", storageTheme);
   }
+
+  /**
+   * Loads the saved theme from localStorage on page load.
+   */
+  function loadInitialTheme() {
+    const savedTheme = localStorage.getItem("theme");
+    const isDark = (savedTheme === "dark");
+
+    if (isDark) {
+      document.body.classList.add("dark-mode");
+      const editorTheme = getEditorTheme(isDark);
+      editor.setOption("theme", editorTheme);
+    }
+  }
+
+  // =======================================================
+  // INITIALIZATION
+  // =======================================================
+
+  // Add listeners only if the elements exist on the page
+  if (elements.runButton) {
+    elements.runButton.addEventListener("click", handleRunClick);
+  }
+  if (elements.themeButton) {
+    elements.themeButton.addEventListener("click", handleThemeToggle);
+  }
+  if (elements.languageSelect) {
+    elements.languageSelect.addEventListener("change", handleLanguageChange);
+  }
+  
+  window.addEventListener("DOMContentLoaded", loadInitialTheme);
+
+} else {
+  console.error("Code editor text area not found!");
 }
 
-// =======================================================
-// INITIALIZATION
-// This runs when the script loads.
-// =======================================================
-
-elements.runButton.addEventListener("click", handleRunClick);
-elements.themeButton.addEventListener("click", handleThemeToggle);
-elements.languageSelect.addEventListener("change", handleLanguageChange);
-window.addEventListener("DOMContentLoaded", loadInitialTheme);
-
-
-// =======================================================
-// FOR JEST TESTING
-// Export the pure functions so your test file can import them.
-// (You must be in a module environment for this to work)
-// =======================================================
-/*
-// Uncomment this if you are using Node.js/Jest environment
-module.exports = {
-  parseExecutionResult,
-  formatErrorMessage,
-  getEditorTheme,
-  getStorageTheme
-};
-*/
+//
+// The 'module.exports' block that was here has been REMOVED
+// because it breaks the script in a browser.
+//
